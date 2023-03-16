@@ -10,7 +10,7 @@ https://www.pololu.com/category/170/zumo-32u4-oled-robot
 https://registry.platformio.org/libraries/pololu/Zumo32U4
 
 
-# H1 Steps to setup zumo for application: 
+# Steps to setup zumo for application: 
 
 ## manual mode (Mode 1):
 In this mode, the zumo robot will be controlled totally manually, the user has the option to use the included basic GUI, or they can use the serial monitor. 
