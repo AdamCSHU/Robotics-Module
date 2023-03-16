@@ -14,7 +14,6 @@ Zumo32U4ProximitySensors proxSensors;
 
 uint16_t proxRightFrontActive, proxLeftFrontActive, proxLeftActive, proxRightActive;
 const int proxTolerance = 5;
-int cooldown = 0;
 
 char action;
 int speed = 100;
@@ -64,16 +63,14 @@ void loop()
         proxRightActive = proxSensors.countsRightWithRightLeds();
         proxLeftActive = proxSensors.countsLeftWithLeftLeds();
        
-      if (proxLeftActive >= proxTolerance && cooldown == 0){
+      if (proxLeftActive >= proxTolerance){
         Serial.print("person detected to the left");
         delay(1000);
         motors.setSpeeds(50, 50);
-        cooldown = 100;
-      } else if (proxRightActive >= proxTolerance && cooldown == 0){
+      } else if (proxRightActive >= proxTolerance){
         Serial.print("person detected to the right");
         delay(1000);
         motors.setSpeeds(50, 50);
-        cooldown = 100;
       }
     }
 
