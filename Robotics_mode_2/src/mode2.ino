@@ -15,7 +15,7 @@ uint16_t max = 400;
 uint16_t min = 210;
 int cornerSpeed = 150;
 
-//implemented bool values to print to serial monitor everytime a person is detected to the right, left or a corner is detected and zumo will switch to manual control.
+//implemented bool values to print to serial monitor everytime a corner is detected, zumo will return manual control to user. 
 static bool cornerDetected = false;
 static bool rightDetected = false;
 static bool leftDetected = false;
@@ -192,6 +192,9 @@ void loop() {
     }
     mode1();
   }else{
+    rightDetected = false;
+    leftDetected = false;
+    cornerDetected = false;
     mode3();
   } 
 }
