@@ -92,13 +92,21 @@ void mode1(){
 
       switch (action)
       {
+      case 'w' : case 'W':
+        ledYellow(1);
+        ledRed(0);
+        ledGreen(0);
+        motors.setSpeeds(speed, speed);
+        delay(800);
+        Serial.write("you are moving forwards");
+        break;
       case 's' : case 'S':
         // go backwards
         ledYellow(0);
         ledRed(0);
         ledGreen(1);
         motors.setSpeeds(speed*-1, speed*-1);
-        delay(100);
+        delay(800);
         Serial.write("You are moving backwards");
         break;  
       case 'a' : case 'A':
@@ -106,9 +114,9 @@ void mode1(){
         ledRed(1);
         ledGreen(0);
         ledYellow(0);
-        motors.setLeftSpeed(0);
+        motors.setLeftSpeed(-speed);
         motors.setRightSpeed(speed);
-        delay(100);
+        delay(500);
         Serial.write("You are moving to the left");
         break;   
       case 'd': case 'D':
@@ -117,10 +125,14 @@ void mode1(){
         ledGreen(0);
         ledYellow(0);
         motors.setLeftSpeed(speed);
-        motors.setRightSpeed(0);
-        delay(100);
+        motors.setRightSpeed(-speed);
+        delay(500);
         Serial.write("You are moving to the right");
-        break;      
+        break;   
+      case 'q' : case 'Q' :
+        motors.setSpeeds(0, 0);
+        delay(100);
+        Serial.write("you have come to a stop");   
     }
     delay(500);
    }
