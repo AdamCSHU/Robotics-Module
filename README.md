@@ -34,3 +34,5 @@ Unfortunately, I have not managed to make this mode fully functional, it is inco
 
 # Installation and setup 
 PlatformIO -> For this project, I have used a visual studio code extension called "platformIO", for that reason, you will need to install the platformIO extension along with it's core associated libraries. Below, I have left links to setup the board (zumo32U4) inside of platformIO. 
+1. install library for zumo from platformio repo. 
+2. select zumo board from board manager.
