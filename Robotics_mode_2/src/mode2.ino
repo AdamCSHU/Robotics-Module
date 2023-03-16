@@ -15,10 +15,10 @@ uint16_t max = 400;
 uint16_t min = 210;
 int cornerSpeed = 150;
 
-static bool corner = false;
-static bool rightObj = false;
-static bool leftObj = false;
-static bool Detected = false; 
+//implemented bool values to print to serial monitor everytime a person is detected to the right, left or a corner is detected and zumo will switch to manual control.
+static bool cornerDetected = false;
+static bool rightDetected = false;
+static bool leftDetected = false;
 
 /*
 mode 2 for zumo robot, semi autonomous. Using line sensors along with proximity sensors to keep zumo inside of the lines, if a turn is detected, zumo will switch to manual controls for the user to make the turn, once the turn is complete
@@ -159,20 +159,29 @@ void loop() {
    
     if (lineSensorValues[0] > max && lineSensorValues[1] > cornerSpeed || lineSensorValues[2] > max && lineSensorValues[1] > cornerSpeed)
     {
+      if (!cornerDetected){
           Serial.print("corner detected \n");
+      }
+      cornerDetected = true;
     }
 
     if (leftSensor > 5 || rightSensor > 5 || (leftCentreSensor > 5 && rightCentreSensor > 5 && leftSensor > 5 && rightSensor > 5))
     {
       if (leftSensor > 5)
       {
+        if (!leftDetected){
           Serial.print("object detected to the left");
+        }
         motors.setSpeeds(-speed, speed);
+        leftDetected = true;
       }
       if (rightSensor > 5)
       {
+        if (!rightDetected){
           Serial.print("object detected to the left");
+        }
         motors.setSpeeds(speed, -speed);
+        rightDetected = true;
       }
       if (leftCentreSensor > 6 && rightCentreSensor > 6 && leftSensor > 5 && rightSensor > 5)
       {
