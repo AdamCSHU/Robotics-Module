@@ -12,21 +12,21 @@ https://registry.platformio.org/libraries/pololu/Zumo32U4
 
 # H1 Steps to setup zumo for application: 
 
-#H2 manual mode:
+##H2 manual mode:
 in this mode, the zumo robot will be controlled totally manually, the user has the option to use the included basic GUI, or they can use the serial monitor. 
-#H3 CONTROLS: 
+###H3 CONTROLS: 
 w - go forward 
 s - go backwards 
 a - go to the left 
 d - go to the right
 the basic GUI includes these controls as well as other buttons to stop the zumo. 
 
-#H2 semi-autonomous mode: 
+##H2 semi-autonomous mode: 
 int his mode, the zumo robot will operate autonomously by keeping itself inside the lines using line sensors. if zumo encounters a corner or turn, manual control will be returned to the user, allowing them to make a turn or go backwards. After zumo has completed a turn, autonomous controls will be returned and zumo will continue along inside the lines of the maze. 
-#H3 CONTROLS: 
+###H3 CONTROLS: 
 controls here are the same as manual mode. please look above.
 
-#H2 autonomous mode (INCOMPLETE): 
+##H2 autonomous mode (INCOMPLETE): 
 in this mode, zumo will be fully autonomous. It will perform all tasks by itself without user interruption. 
 Unfortunately, I have not managed to make this mode fully functional, it is incomplete. 
 
