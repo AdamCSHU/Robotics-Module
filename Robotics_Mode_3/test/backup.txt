@@ -1,0 +1,196 @@
+#include <Arduino.h>
+#include <Zumo32U4.h>
+#include <wire.h>
+
+Zumo32U4OLED display;
+
+Zumo32U4Motors motors;
+Zumo32U4Buzzer buzzer;
+Zumo32U4LineSensors lineSensors;
+Zumo32U4ProximitySensors proxSensors;
+Zumo32U4ButtonA buttonA;
+Zumo32U4ButtonB buttonB;
+Zumo32U4IMU imu;
+
+#include "TurnSensor.h"
+#include "GridMovement.h"
+
+int speed = 200;
+char path[100];
+uint8_t pathLength = 0;
+
+//calibrate sensors before starting mode 3
+void calibrateSensor(){
+delay(2000);
+for (unsigned int i = 0; i < 120; i++){
+  if (i > 30 && i <= 90){
+    motors.setSpeeds(-speed, speed);
+  }
+  else{
+
+    motors.setSpeeds(speed, -speed);
+  }
+  lineSensors.calibrate();
+  }
+motors.setSpeeds(0, 0);
+}
+
+//mode 3, start with line sensors and proximity sensors. If a wall is detected by proximity sensors, check right and left, if there is is a line which has no wall on either side, turn that direction. 
+void setup() {
+  // put your setup code here, to run once:
+
+  Serial.begin(9600);
+
+  lineSensors.initFiveSensors();
+  proxSensors.initThreeSensors();
+
+  calibrateSensor();
+
+  turnSensorSetup();
+
+  delay(1000);
+  
+  turnSensorReset();
+
+  buzzer.play(">g32<<c32");
+
+  solveMaze();
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  buttonA.waitForButton();
+
+  followPath();
+}
+
+void autotonimousMode(){
+  
+}
+
+void roomSearch (){
+  
+}
+
+char selectDirection(bool left, bool straight, bool right){
+  //makes a decision regarding direction, implements a left hand wall strategy, always turn as far left as possible
+  if (left) {return 'L';}
+  else if (straight){return 'S';}
+  else if (right){return 'R';}
+  else {return 'B';}
+}
+
+void solveMaze(){
+  pathLength = 0;
+
+  Serial.print("starting movement");
+
+  delay(1000);
+
+  while (1){
+
+    followSegment();
+
+    bool left, straight, right;
+    driveToIntersectionCenter(&left, &straight, &right);
+
+    if (aboveDarkSpot()){
+      break;
+    }
+      char direction = selectDirection(left, straight, right);
+
+      if (pathLength >= sizeof(path)){
+        Serial.print("Path is full");
+        while (1){
+          ledRed(1);
+        }
+      }
+      path[pathLength] = direction;
+      pathLength++;
+
+      simplifyPath();
+
+      serialPrint();
+
+      if (pathLength == 2 && path[0] =='B' && path[1] == 'B'){
+          Serial.print("searched maze, not found path, searching will continue");
+      }
+
+      turn(direction);
+    }
+    motors.setSpeeds(0, 0);
+    Serial.print("Mazed solved and optimal path found");
+  }
+
+void followPath(){
+
+  Serial.print("starting path following");
+
+  delay(1000);
+
+  for (uint16_t i = 0; i < pathLength; i++){
+
+    followSegment();
+    driveToIntersectionCenter();
+
+    turn(path[i]);
+  }
+
+  followSegment();
+
+  motors.setSpeeds(0, 0);
+  Serial.print("end of path reached");
+}
+
+void simplifyPath(){
+
+  if (pathLength < 3 || path[pathLength - 2] != 'B'){
+    return;
+  }
+
+  int16_t angle = 0;
+
+  for (uint8_t i = 1; i <= 3; i++){
+    switch (path[pathLength - i])
+    {
+      case 'L':
+        angle += 90;
+        break;
+      case 'R':
+        angle -= 90;
+        break;
+      case 'B':
+        angle += 180;
+        break;
+    }
+  }
+
+  angle = angle % 360;
+
+  switch (angle){
+    case 0:
+      path[pathLength - 3] = 'S';
+      break;
+    case 90:
+      path[pathLength - 3] = 'L';
+      break;
+    case 180:
+      path[pathLength - 3] = 'B';
+      break;
+    case 270: 
+      path[pathLength - 3] = 'R';
+      break;
+  }
+
+  pathLength -= 2;
+}
+
+void serialPrint(){
+  path[pathLength] = 0;
+
+  Serial.print(path);
+  if (pathLength > 0){
+
+    Serial.print(path + 8);
+  }
+}

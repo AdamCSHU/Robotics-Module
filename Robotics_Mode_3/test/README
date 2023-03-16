@@ -1,0 +1,187 @@
+#include <Zumo32U4.h>
+#include <wire.h>
+
+Zumo32U4ButtonA buttonA;
+Zumo32U4Buzzer buzzer;
+Zumo32U4Motors motors;
+Zumo32U4LineSensors lineSensors;
+Zumo32U4ProximitySensors proxSensors;
+
+/*mode3.ino, fully autonomous mode. This mode requires no user interruptions, the zumo robot will drive and turn by itself, while staying inside the boundaries of the maze. 
+Research and inspiration includes the following sources: 
+https://github.com/pololu/zumo-32u4-arduino-library/tree/master/examples 
+https://www.pololu.com/docs/0J63
+https://pololu.github.io/zumo-32u4-arduino-library/index.html
+https://www.pololu.com/category/7/sensors
+https://www.pololu.com/category/170/zumo-32u4-oled-robot
+https://registry.platformio.org/libraries/pololu/Zumo32U4
+*/
+
+const int lineMax = 50; //value should be adjusted to fit maze or course the robot will be used on.
+const uint16_t numSensors = 3; //to get all 5 line sensors working, you must change the jumpers on the sensor bracket to dn2 20 and dn4 4 respectively. In this case, I have left it at 5, 
+//but if you haven't changed the jumpers on the bracket, then please change this number to 3.
+uint16_t lineSensorValues[numSensors];
+const int proxTolerance = 5;
+const int speed = 200;
+uint16_t position, leftFrontProxValue, rightFrontProxValue, rightProxValue, leftProxValue;
+
+//calibrate sensors before starting mode 3
+void calibrateSensor(){
+//wait two second before starting sensor calibration, calibration of line sensors rotates zumo in place to place sensors over the line. 
+delay(2000);
+
+for (unsigned int i = 0; i < 120; i++){
+  if (i > 30 && i <= 90){
+    motors.setSpeeds(-speed, speed);
+  }
+  else{
+
+    motors.setSpeeds(speed, -speed);
+  }
+  lineSensors.calibrate();
+  }
+motors.setSpeeds(0, 0);
+}
+
+void getValues(){
+    lineSensors.read(lineSensorValues);
+  proxSensors.read();
+}
+
+void setup(){
+  //this code will run once during execution.
+  Serial.begin(9600);
+
+  lineSensors.initFiveSensors();
+  proxSensors.initThreeSensors();
+
+  calibrateSensor();
+
+  delay(1000);
+
+  buzzer.play(">g32<<c32");
+}
+
+void loop(){
+  motors.setSpeeds(speed, speed);
+
+  rightFrontProxValue = proxSensors.countsFrontWithRightLeds();
+  leftFrontProxValue = proxSensors.countsFrontWithLeftLeds();
+  rightProxValue = proxSensors.countsRightWithRightLeds();
+  leftProxValue = proxSensors.countsLeftWithLeftLeds();
+
+  if (leftFrontProxValue >= proxTolerance || rightFrontProxValue >= proxTolerance){
+    motors.setSpeeds(0, 0);
+    delay(150);
+
+    motors.setSpeeds(-speed, speed);
+    delay(300);
+  }else if (leftProxValue >= proxTolerance){
+    motors.setSpeeds(0, 0);
+    Serial.print("person detected to the left");
+    delay(200);
+  }else if (rightProxValue >= proxTolerance){
+    motors.setSpeeds(0, 0);
+    Serial.print("person detected to the right");
+    delay(200);
+  }
+  if (numSensors == 5){
+
+  if (lineSensorValues[4] > lineMax && lineSensorValues[0] > lineMax){
+    motors.setSpeeds(-speed, -speed); //backup
+    delay(200);
+  }else if (lineSensorValues[0] > lineMax){
+    motors.setSpeeds(speed, -speed);
+    delay(50);
+  }else if (lineSensorValues[1] > lineMax){
+    motors.setSpeeds(speed, -speed);
+    delay(50);
+  }else if (lineSensorValues[3] > lineMax){
+    motors.setSpeeds(-speed, speed);
+    delay(50);
+  }else if (lineSensorValues[4] > lineMax){
+    motors.setSpeeds(-speed, speed);
+    delay(50);
+  }else if (lineSensorValues[4] < lineMax && lineSensorValues[3] < lineMax && lineSensorValues[1] < lineMax && lineSensorValues[0] < lineMax){
+    motors.setSpeeds(speed, speed);
+    delay(25);
+    }
+  }else if (numSensors == 3){
+    if (lineSensorValues[2] > lineMax && lineSensorValues[0] > lineMax){
+      motors.setSpeeds(-speed, speed);
+      delay(500);
+    }else if (lineSensorValues[0] > lineMax){
+      motors.setSpeeds(speed, -speed);
+      delay(50);
+    }else if (lineSensorValues[2] > lineMax){
+      motors.setSpeeds(-speed, speed);
+      delay(50);
+    }else if (lineSensorValues[0] < lineMax && lineSensorValues[2] < lineMax){
+      motors.setSpeeds(speed, speed);
+      delay(25);
+    }
+  }
+}
+/*
+void runAutomation(){
+
+  motors.setSpeeds(speed, speed);
+
+  rightFrontProxValue = proxSensors.countsFrontWithRightLeds();
+  leftFrontProxValue = proxSensors.countsFrontWithLeftLeds();
+  rightProxValue = proxSensors.countsRightWithRightLeds();
+  leftProxValue = proxSensors.countsLeftWithLeftLeds();
+
+  if (leftFrontProxValue >= proxTolerance || rightFrontProxValue >= proxTolerance){
+    motors.setSpeeds(0, 0);
+    delay(150);
+
+    motors.setSpeeds(-speed, speed);
+    delay(300);
+  }else if (leftProxValue >= proxTolerance){
+    motors.setSpeeds(0, 0);
+    Serial.print("person detected to the left");
+    delay(200);
+  }else if (rightProxValue >= proxTolerance){
+    motors.setSpeeds(0, 0);
+    Serial.print("person detected to the right");
+    delay(200);
+  }
+  if (numSensors == 5){
+
+  if (lineSensorValues[4] > lineMax && lineSensorValues[0] > lineMax){
+    motors.setSpeeds(-speed, -speed); //backup
+    delay(200);
+  }else if (lineSensorValues[0] > lineMax){
+    motors.setSpeeds(speed, -speed);
+    delay(50);
+  }else if (lineSensorValues[1] > lineMax){
+    motors.setSpeeds(speed, -speed);
+    delay(50);
+  }else if (lineSensorValues[3] > lineMax){
+    motors.setSpeeds(-speed, speed);
+    delay(50);
+  }else if (lineSensorValues[4] > lineMax){
+    motors.setSpeeds(-speed, speed);
+    delay(50);
+  }else if (lineSensorValues[4] < lineMax && lineSensorValues[3] < lineMax && lineSensorValues[1] < lineMax && lineSensorValues[0] < lineMax){
+    motors.setSpeeds(speed, speed);
+    delay(25);
+    }
+  }else if (numSensors == 3){
+    if (lineSensorValues[2] > lineMax && lineSensorValues[0] > lineMax){
+      motors.setSpeeds(-speed, speed);
+      delay(500);
+    }else if (lineSensorValues[0] > lineMax){
+      motors.setSpeeds(speed, -speed);
+      delay(50);
+    }else if (lineSensorValues[2] > lineMax){
+      motors.setSpeeds(-speed, speed);
+      delay(50);
+    }else if (lineSensorValues[0] < lineMax && lineSensorValues[2] < lineMax){
+      motors.setSpeeds(speed, speed);
+      delay(25);
+    }
+  }
+}
+*/
