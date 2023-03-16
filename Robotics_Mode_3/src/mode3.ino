@@ -41,11 +41,6 @@ for (unsigned int i = 0; i < 120; i++){
 motors.setSpeeds(0, 0);
 }
 
-void getValues(){
-    lineSensors.read(lineSensorValues);
-  proxSensors.read();
-}
-
 void setup(){
   //this code will run once during execution.
   Serial.begin(9600);
